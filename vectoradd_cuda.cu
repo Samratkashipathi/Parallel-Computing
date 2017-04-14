@@ -41,7 +41,7 @@ int main (void)
       cudaMemcpy (dev_b , Host_b , N*sizeof(int) , cudaMemcpyHostToDevice);
 
       //Make a call to GPU kernel
-      Vector_Addition <<<(N)/512, 20 >>> (dev_a , dev_b , dev_c ) ;
+      Vector_Addition <<<(N)/512, 512 >>> (dev_a , dev_b , dev_c ) ;
 
       //Copy back to Host array from Device array
       cudaMemcpy(Host_c , dev_c , N*sizeof(int) , cudaMemcpyDeviceToHost);
