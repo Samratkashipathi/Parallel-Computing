@@ -14,7 +14,7 @@ __global__ void matrixMul(A_gpu,B_gpu,C_gpu,K){
         temp+ =A_gpu(i,k) * B_gpu(k,j)
     end
 
-    C_gpu(i,j) = accu
+    C_gpu(i,j) = temp;
     
 }
 
