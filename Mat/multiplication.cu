@@ -1,71 +1,52 @@
-#include <iostream>
-#include <vector>
-#include <stdlib.h>
-#include <time.h>
-#include <cuda_runtime.h>
-#include "kernel.h"
-#include "kernel.cu"
-#include "dev_array.h"
+#include <stdio.h>
 #include <math.h>
+#include<cuda.h>
 
-using namespace std;
 
-int main()
-{
-    // Perform matrix multiplication C = A*B
-    // where A, B and C are NxN matrices
-    int N = 16;//N=32;
-    int SIZE = N*N;
+__global__ void matrixMul(A_gpu,B_gpu,C_gpu,K){
 
-    // Allocate memory on the host
-    vector<float> h_A(SIZE);
-    vector<float> h_B(SIZE);
-    vector<float> h_C(SIZE);
+    temp = 0
+    
+    i = blockIdx.y * blockDim.y + threadIdx.y    // Row i of matrix C
+    j = blockIdx.x * blockDim.x + threadIdx.x    // Column j of matrix C
 
-    // Initialize matrices on the host
-    for (int i=0; i<N; i++){
-        for (int j=0; j<N; j++){
-            h_A[i*N+j] = sin(i);
-            h_B[i*N+j] = cos(j);
-        }
-    }
+    for(int k = 0;k<K-1;k++)
+        temp+ =A_gpu(i,k) * B_gpu(k,j)
+    end
 
-    // Allocate memory on the device
-    dev_array<float> d_A(SIZE);
-    dev_array<float> d_B(SIZE);
-    dev_array<float> d_C(SIZE);
-
-    d_A.set(&h_A[0], SIZE);
-    d_B.set(&h_B[0], SIZE);
-
-    matrixMultiplication(d_A.getData(), d_B.getData(), d_C.getData(), N);
-    cudaDeviceSynchronize();
-
-    d_C.get(&h_C[0], SIZE);
-    cudaDeviceSynchronize();
-
-    float *cpu_C;
-    cpu_C=new float[SIZE];
-
-    // Now do the matrix multiplication on the CPU
-    float sum;
-    for (int row=0; row<N; row++){
-        for (int col=0; col<N; col++){
-            sum = 0.f;
-            for (int n=0; n<N; n++){
-                sum += h_A[row*N+n]*h_B[n*N+col];
-            }
-            cpu_C[row*N+col] = sum;
-        }
-    }
-
-    double err = 0;
-    // Check the result and make sure it is correct
-    for (int ROW=0; ROW < N; ROW++){
-        for (int COL=0; COL < N; COL++){
-            err += cpu_C[ROW * N + COL] - h_C[ROW * N + COL];
-        }
-    }
-
-    return 0;
+    C_gpu(i,j) = accu
+    
 }
+
+
+
+void main(){
+    
+
+    //Host array
+    int A_cpu[N], B_cpu[N], C_cpu[N];
+
+    //Device array
+    int *A_gpu, *B_gpu, *C_gpu ;
+    
+
+    cudaMalloc((void **)&A_gpu , N*sizeof(int) ) ;
+    cudaMalloc((void **)&B_gpu , N*sizeof(int) ) ;
+    cudaMalloc((void **)&C_gpu , N*sizeof(int) ) ;
+
+
+    cudaMemcpy (A_gpu , A_cpu , N*sizeof(int) , cudaMemcpyHostToDevice);
+    cudaMemcpy (B_gpu , B_cpu , N*sizeof(int) , cudaMemcpyHostToDevice);
+
+    
+    dim3 dimBlock(16, 16);
+    dim3 dimGrid(N/dimBlock.x, M/dimBlock.y);
+
+    matrixMul<<<dimGrid, dimBlock>>>(A_gpu,B_gpu,C_gpu,K);
+    
+    cudaMemcpy(C_cpu , C_gpu , N*sizeof(int) , cudaMemcpyDeviceToHost);
+    
+    
+}
+
+
