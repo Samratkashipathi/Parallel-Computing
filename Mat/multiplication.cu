@@ -3,18 +3,17 @@
 #include<cuda.h>
 
 
-__global__ void matrixMul(A_gpu,B_gpu,C_gpu,K){
+__global__ void matrixMul(int A_gpu,int B_gpu,int C_gpu,int K){
 
-    temp = 0
+    int temp = 0;
     
-    i = blockIdx.y * blockDim.y + threadIdx.y    // Row i of matrix C
-    j = blockIdx.x * blockDim.x + threadIdx.x    // Column j of matrix C
+    i = blockIdx.y * blockDim.y + threadIdx.y ;   // Row i of matrix C
+    j = blockIdx.x * blockDim.x + threadIdx.x  ;  // Column j of matrix C
 
     for(int k = 0;k<K-1;k++)
-        temp+ =A_gpu(i,k) * B_gpu(k,j)
-    end
+        temp+ =A_gpu[i][k] * B_gpu[k][j];
 
-    C_gpu(i,j) = temp;
+    C_gpu[i][j] = temp;
     
 }
 
@@ -22,13 +21,14 @@ __global__ void matrixMul(A_gpu,B_gpu,C_gpu,K){
 
 void main(){
     
-
+    int N=16;//N=32;
     //Host array
     int A_cpu[N], B_cpu[N], C_cpu[N];
 
     //Device array
     int *A_gpu, *B_gpu, *C_gpu ;
     
+    int K=N;
 
     cudaMalloc((void **)&A_gpu , N*sizeof(int) ) ;
     cudaMalloc((void **)&B_gpu , N*sizeof(int) ) ;
