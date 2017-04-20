@@ -6,6 +6,8 @@
 __global__ void matrixMul(int A_gpu,int B_gpu,int C_gpu,int K){
 
     int temp = 0;
+    int i=0;
+    int j=0;
     
     i = blockIdx.y * blockDim.y + threadIdx.y ;   // Row i of matrix C
     j = blockIdx.x * blockDim.x + threadIdx.x  ;  // Column j of matrix C
